@@ -1,9 +1,27 @@
+const User = require('../models/user.model')
+const bcrypt = require('bcrypt')
+const { generateAccessToken, generateRefreshToken } = require('../helpers/jwt')
+
 module.exports = {
-    register: async (req, res, next) => {
+    register: async (req, res) => {
         try {
-            res.send('register route OK')
+            const {email, password} = req.body
+            if(!email || !password) res.status(400).json({ message: 'Email or Password is empty' })
+
+            const candidate = await User.findOne({email})
+            if(candidate) res.status(400).json({ message: 'User is already exist' })
+
+            const hashPassword = bcrypt.hashSync(password, 10)
+            const user = new User({ email, password: hashPassword})
+            const savedUser = await user.save()
+            const accessToken = generateAccessToken(savedUser.id)
+            const refreshToken = generateRefreshToken(savedUser.id)
+
+            res.send({ accessToken, refreshToken })
+
         } catch (err) {
             console.log(err)
+            res.status(400).json({message: 'Registration error'})
         }
     },
 
