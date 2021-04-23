@@ -10,7 +10,7 @@ module.exports = {
         return jwt.sign(payload, secret, options)
     },
     generateRefreshToken: (userId) => {
-        const payload = {userId}
+        const payload = { userId }
         const secret = process.env.REFRESH_TOKEN_SECRET
         const options = {expiresIn: '1y'}
 
@@ -19,4 +19,20 @@ module.exports = {
 
         return refreshToken
     },
+    verifyRefreshToken: (refreshToken) => {
+        const secret = process.env.REFRESH_TOKEN_SECRET
+        const decodedData = jwt.verify(refreshToken, secret)
+        console.log('decodedData', decodedData)
+        const userId = decodedData.userId
+
+        redisClient.GET(userId, (err, result) => {
+            if(refreshToken === result) {
+                console.log('refreshToken', refreshToken)
+                console.log('result', result)
+                console.log('userId', userId)
+                console.log(refreshToken === result)
+                return userId
+            }
+        })
+    }
 }
