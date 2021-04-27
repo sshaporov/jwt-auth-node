@@ -20,6 +20,10 @@ module.exports = {
             const accessToken = generateAccessToken(savedUser.id)
             const refreshToken = generateRefreshToken(savedUser.id)
 
+            // todo: нужно сгенерить юзер айди черех uuid.v4 а затем уже сетить юзера в базу сразу с сессией
+            const session = createSession(refreshToken)
+            await User.findOneAndUpdate({email}, { $set: {session}})
+
             res.json({accessToken, refreshToken})
         } catch (err) {
             console.log(err)
@@ -46,15 +50,7 @@ module.exports = {
             const refreshToken = generateRefreshToken(user.id)
 
             const session = createSession(refreshToken)
-            User.findOneAndUpdate({email}, { $set: {session}})
-                .exec()
-                .then((qwe) => {
-                    console.log('session OK', qwe)
-
-                })
-                .catch((err) => {
-                    console.log(err)
-                })
+            await User.findOneAndUpdate({email}, { $set: {session}})
 
             res.json({ accessToken, refreshToken })
         } catch (err) {
