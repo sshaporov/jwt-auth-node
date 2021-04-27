@@ -13,7 +13,7 @@ const UserSchema = new Schema({
     },
     session: {
         refreshToken: String,
-        expiresAt: Number,
+        expiresAt: Date,
     }
 })
 
