@@ -2,6 +2,7 @@ const User = require('../models/user.model')
 const bcrypt = require('bcrypt')
 const {generateAccessToken, generateRefreshToken, verifyRefreshToken} = require('../helpers/jwt')
 const {createSession} = require('../helpers/user-session')
+const {v4: uuid} = require('uuid')
 
 module.exports = {
     register: async (req, res) => {
@@ -14,11 +15,11 @@ module.exports = {
 
             const hashPassword = bcrypt.hashSync(password, 10)
 
-            const user = new User({email, password: hashPassword})
+            const user = new User({userId: uuid(), email, password: hashPassword})
             const savedUser = await user.save()
 
-            const accessToken = generateAccessToken(savedUser.id)
-            const refreshToken = generateRefreshToken(savedUser.id)
+            const accessToken = generateAccessToken(savedUser.userId)
+            const refreshToken = generateRefreshToken(savedUser.userId)
 
             // todo: нужно сгенерить юзер айди черех uuid.v4 а затем уже сетить юзера в базу сразу с сессией
             const session = createSession(refreshToken)
@@ -27,7 +28,7 @@ module.exports = {
             res.json({accessToken, refreshToken})
         } catch (err) {
             console.log(err)
-            res.status(400).json({message: 'Registration error'})
+            res.sendStatus(400).json({message: 'auth/registration error'})
         }
     },
 
@@ -46,8 +47,8 @@ module.exports = {
                 return res.status(400).json({message: 'Invalid password -> upd message'})
             }
 
-            const accessToken = generateAccessToken(user.id)
-            const refreshToken = generateRefreshToken(user.id)
+            const accessToken = generateAccessToken(user.userId)
+            const refreshToken = generateRefreshToken(user.userId)
 
             const session = createSession(refreshToken)
             await User.findOneAndUpdate({email}, { $set: {session}})
@@ -55,7 +56,7 @@ module.exports = {
             res.json({ accessToken, refreshToken })
         } catch (err) {
             console.log(err)
-            res.status(400).json({message: 'Login error'})
+            res.sendStatus(400).json({message: 'auth/login error'})
         }
     },
 
@@ -72,20 +73,30 @@ module.exports = {
             const newRefreshToken = await generateRefreshToken(userId)
 
             const session = createSession(newRefreshToken)
-            await User.findOneAndUpdate({_id: userId}, { $set: {session}})
+            await User.findOneAndUpdate({userId}, { $set: {session}})
 
             res.json({accessToken: newAccessToken, refreshToken: newRefreshToken})
         } catch (err) {
             console.log(err)
-            res.status(400).json({message: 'Refresh token error'})
+            res.sendStatus(400).json({message: 'auth/refresh-token error'})
         }
     },
 
     logout: async (req, res) => {
         try {
-            res.send('logout route OK')
+            const {refreshToken} = req.body
+            if (!refreshToken) res.status(400).json({message: 'Incorrect refresh token'})
+
+            const userId = await verifyRefreshToken(refreshToken)
+            if (!userId) res.status(400).json({message: 'Refresh tokens dont match between request <-> db'})
+
+            await User.updateOne({userId},{ $unset : { session: {} } })
+
+            res.sendStatus(204)
+
         } catch (err) {
             console.log(err)
+            res.sendStatus(400).json({message: 'auth/logout error'})
         }
     },
 }

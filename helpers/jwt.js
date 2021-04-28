@@ -11,7 +11,7 @@ module.exports = {
         return jwt.sign(payload, secret, options)
     },
     generateRefreshToken: (userId) => {
-        const payload = { userId }
+        const payload = {userId}
         const secret = process.env.REFRESH_SECRET_KEY
         const options = {expiresIn: '1y'}
 
@@ -24,9 +24,9 @@ module.exports = {
 
         const userId = decodedData.userId
 
-        const user = await User.findOne({_id: userId})
+        const user = await User.findOne({userId})
 
-        if(refreshToken === user.session.refreshToken) {
+        if (refreshToken === user.session.refreshToken) {
             return userId
         }
     }
