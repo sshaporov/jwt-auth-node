@@ -28,7 +28,7 @@ module.exports = {
             res.json({accessToken, refreshToken})
         } catch (err) {
             console.log(err)
-            res.sendStatus(400).json({message: 'auth/registration error'})
+            res.status(400).json({message: 'auth/registration error'})
         }
     },
 
@@ -56,7 +56,7 @@ module.exports = {
             res.json({ accessToken, refreshToken })
         } catch (err) {
             console.log(err)
-            res.sendStatus(400).json({message: 'auth/login error'})
+            res.status(400).json({message: 'auth/login error'})
         }
     },
 
@@ -78,7 +78,7 @@ module.exports = {
             res.json({accessToken: newAccessToken, refreshToken: newRefreshToken})
         } catch (err) {
             console.log(err)
-            res.sendStatus(400).json({message: 'auth/refresh-token error'})
+            res.status(400).json({message: 'auth/refresh-token error'})
         }
     },
 
@@ -96,7 +96,7 @@ module.exports = {
 
         } catch (err) {
             console.log(err)
-            res.sendStatus(400).json({message: 'auth/logout error'})
+            res.status(400).json({message: 'auth/logout error'})
         }
     },
 }
