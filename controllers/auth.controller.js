@@ -64,14 +64,17 @@ module.exports = {
             const {refreshToken} = req.body
             if (!refreshToken) res.status(400).json({message: 'Incorrect refresh token'})
 
+            // если успех верифая, то возвращаем userId, в противном случае - ничего т.е. undefined
             const userId = await verifyRefreshToken(refreshToken)
-            console.log('userId in main', userId)
-            if (!userId) res.status(400).json({message: 'Refresh token is not go through verify'})
+            if (!userId) res.status(400).json({message: 'Refresh tokens dont match between request <-> db'})
 
             const newAccessToken = await generateAccessToken(userId)
-            const newRefreshToken1 = await generateRefreshToken(userId)
+            const newRefreshToken = await generateRefreshToken(userId)
 
-            res.json({accessToken: newAccessToken, refreshToken: newRefreshToken1})
+            const session = createSession(newRefreshToken)
+            await User.findOneAndUpdate({_id: userId}, { $set: {session}})
+
+            res.json({accessToken: newAccessToken, refreshToken: newRefreshToken})
         } catch (err) {
             console.log(err)
             res.status(400).json({message: 'Refresh token error'})

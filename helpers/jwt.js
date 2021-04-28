@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken')
+const User = require('../models/user.model')
+const {createSession} = require('../helpers/user-session')
 
 module.exports = {
     generateAccessToken: (userId) => {
@@ -13,16 +15,19 @@ module.exports = {
         const secret = process.env.REFRESH_SECRET_KEY
         const options = {expiresIn: '1y'}
 
-        const refreshToken = jwt.sign(payload, secret, options)
-        // redisClient.SET(userId, refreshToken, 'EX', 365 * 24 * 60 * 60)
+        return jwt.sign(payload, secret, options)
 
-        return refreshToken
     },
     verifyRefreshToken: async (refreshToken) => {
         const secret = process.env.REFRESH_SECRET_KEY
         const decodedData = jwt.verify(refreshToken, secret)
-        console.log('decodedData', decodedData)
+
         const userId = decodedData.userId
 
+        const user = await User.findOne({_id: userId})
+
+        if(refreshToken === user.session.refreshToken) {
+            return userId
+        }
     }
 }
