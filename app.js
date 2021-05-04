@@ -3,6 +3,7 @@ const authRoute = require('./routes/auth.route')
 const authMiddleware = require('./middleware/auth.middleware')
 require('dotenv').config()
 require('./helpers/init-mongodb')
+
 const passport = require('passport')
 require('./config/passport')(passport)
 
