@@ -19,7 +19,7 @@ const UserSchema = new Schema({
     session: {
         refreshToken: String,
         expiresAt: Date,
-    }
+    },
 })
 
 module.exports = mongoose.model('User', UserSchema)
