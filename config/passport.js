@@ -25,15 +25,13 @@ module.exports = function (passport) {
                 }
 
                 try {
-                    //find the user in our database
                     let user = await GoogleUser.findOne({ googleId: profile.id })
 
+                    // verify google user
                     if (user) {
-                        //If user present in our database.
                         done(null, user)
                         console.log('юзер есть в бд')
                     } else {
-                        // if user is not preset in our database save user data to database.
                         user = await GoogleUser.create(newUser)
                         done(null, user)
                         console.log('юзера нет в бд')
@@ -46,12 +44,10 @@ module.exports = function (passport) {
         )
     )
 
-    // used to serialize the user for the session
     passport.serializeUser((user, done) => {
         done(null, user.id)
     })
 
-    // used to deserialize the user
     passport.deserializeUser((id, done) => {
         GoogleUser.findById(id, (err, user) => done(err, user))
     })
