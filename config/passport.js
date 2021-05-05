@@ -1,5 +1,8 @@
 const GoogleStrategy = require('passport-google-oauth20').Strategy
-const GoogleUser = require('../models/googleUser.model')
+const User = require('../models/user.model')
+const {generateAccessToken, generateRefreshToken} = require('../helpers/jwt')
+const {createSession} = require('../helpers/user-session')
+const {v4: uuid} = require('uuid')
 
 module.exports = function (passport) {
     passport.use(
@@ -9,36 +12,25 @@ module.exports = function (passport) {
                 clientSecret: process.env.GOOGLE_CLIENT_SECRET,
                 callbackURL: '/auth/google/callback',
             },
-            async (accessToken, refreshToken, profile, done) => {
+            async (googleAccessToken, googleRefreshToken, googleProfile, done) => {
 
-                //get the user data from google
-                //console.log('profile', profile)
-                console.log('accessToken', accessToken)
-                console.log('refreshToken', refreshToken)
-                const newUser = {
-                    googleId: profile.id,
-                    displayName: profile.displayName,
-                    firstName: profile.name.givenName,
-                    lastName: profile.name.familyName,
-                    image: profile.photos[0].value,
-                    email: profile.emails[0].value
-                }
+                const email = googleProfile.emails[0].value
+                const user = await User.findOne({email})
 
-                try {
-                    let user = await GoogleUser.findOne({ googleId: profile.id })
+                if (!user) {
+                    const newUser = new User({userId: uuid(), email})
+                    const savedUser = await newUser.save()
 
-                    // verify google user
-                    if (user) {
-                        done(null, user)
-                        console.log('юзер есть в бд')
-                    } else {
-                        user = await GoogleUser.create(newUser)
-                        done(null, user)
-                        console.log('юзера нет в бд')
-                    }
-                } catch (err) {
-                    console.error(err)
-                    console.error('My error passport')
+                    const accessToken = generateAccessToken(savedUser.userId)
+                    const refreshToken = generateRefreshToken(savedUser.userId)
+                    const session = createSession(refreshToken)
+
+                    const userWithSession = await User.findOneAndUpdate({email}, { $set: {session}})
+                    console.log('userWithSession', userWithSession)
+
+                    return done(null, userWithSession, accessToken)
+                } else {
+                    return done(null, null)
                 }
             }
         )
@@ -49,6 +41,6 @@ module.exports = function (passport) {
     })
 
     passport.deserializeUser((id, done) => {
-        GoogleUser.findById(id, (err, user) => done(err, user))
+        User.findById(id, (err, user) => done(err, user))
     })
 }

@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt')
 const {generateAccessToken, generateRefreshToken, verifyRefreshToken} = require('../helpers/jwt')
 const {createSession} = require('../helpers/user-session')
 const {v4: uuid} = require('uuid')
+const passport = require('passport')
+
 
 module.exports = {
     register: async (req, res) => {
@@ -93,7 +95,6 @@ module.exports = {
             await User.updateOne({userId},{ $unset : { session: {} } })
 
             res.sendStatus(204)
-
         } catch (err) {
             console.log(err)
             res.status(400).json({message: 'auth/logout error'})
