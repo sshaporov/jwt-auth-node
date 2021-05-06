@@ -25,10 +25,13 @@ module.exports = function (passport) {
                     const refreshToken = generateRefreshToken(savedUser.userId)
                     const session = createSession(refreshToken)
 
-                    const userWithSession = await User.findOneAndUpdate({email}, { $set: {session}})
+                    const userWithSession = await User.findOneAndUpdate({email}, { $set: {session}}, {                           // доп. опции обновления
+                        returnOriginal: false
+                    })
                     console.log('userWithSession', userWithSession)
+                    console.log('***********************************************************************************')
 
-                    return done(null, userWithSession, accessToken)
+                    return done(null, userWithSession, { accessToken, refreshToken })
                 } else {
                     return done(null, null)
                 }

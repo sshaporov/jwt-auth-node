@@ -14,7 +14,13 @@ router.get('/google', passport.authenticate('google', {
     approvalPrompt: 'force',
 } ))
 router.get('/google/callback', passport.authenticate('google'), (req, res) => {
-    res.redirect('/test')
+    console.log('user: ', req.user)
+    console.log('req.authInfo.accessToken: ', req.authInfo.accessToken)
+    console.log('req.authInfo.refreshToken: ', req.authInfo.refreshToken)
+    console.log('***********************************************************************************')
+
+    res.json({accessToken: req.authInfo.accessToken, refreshToken: req.authInfo.refreshToken})
+
 })
 
 module.exports = router
