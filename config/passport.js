@@ -28,12 +28,18 @@ module.exports = function (passport) {
                     const userWithSession = await User.findOneAndUpdate({email}, { $set: {session}}, {                           // доп. опции обновления
                         returnOriginal: false
                     })
-                    console.log('userWithSession', userWithSession)
-                    console.log('***********************************************************************************')
 
                     return done(null, userWithSession, { accessToken, refreshToken })
                 } else {
-                    return done(null, null)
+                    const accessToken = generateAccessToken(user.userId)
+                    const refreshToken = generateRefreshToken(user.userId)
+                    const session = createSession(refreshToken)
+
+                    const updatedUser = await User.findOneAndUpdate({email}, { $set: {session}}, {                           // доп. опции обновления
+                        returnOriginal: false
+                    })
+
+                    return done(null, updatedUser, { accessToken, refreshToken })
                 }
             }
         )
