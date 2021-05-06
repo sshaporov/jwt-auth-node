@@ -14,7 +14,7 @@ const UserSchema = new Schema({
     },
     password: {
         type: String,
-        require: true,
+        require: false,
     },
     session: {
         refreshToken: String,
