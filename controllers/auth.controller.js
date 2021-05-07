@@ -25,7 +25,7 @@ module.exports = {
 
             // todo: нужно сгенерить юзер айди черех uuid.v4 а затем уже сетить юзера в базу сразу с сессией
             const session = createSession(refreshToken)
-            await User.findOneAndUpdate({email}, { $set: {session}})
+            await User.findOneAndUpdate({email}, {$set: {session}})
 
             res.json({accessToken, refreshToken})
         } catch (err) {
@@ -53,9 +53,16 @@ module.exports = {
             const refreshToken = generateRefreshToken(user.userId)
 
             const session = createSession(refreshToken)
-            await User.findOneAndUpdate({email}, { $set: {session}})
+            await User.findOneAndUpdate({email}, {$set: {session}})
 
-            res.json({ accessToken, refreshToken })
+            res.json({
+                accessToken,
+                refreshToken,
+                user: {
+                    userId: user.userId,
+                    email: user.email,
+                }
+            })
         } catch (err) {
             console.log(err)
             res.status(400).json({message: 'auth/login error'})
@@ -75,7 +82,7 @@ module.exports = {
             const newRefreshToken = await generateRefreshToken(userId)
 
             const session = createSession(newRefreshToken)
-            await User.findOneAndUpdate({userId}, { $set: {session}})
+            await User.findOneAndUpdate({userId}, {$set: {session}})
 
             res.json({accessToken: newAccessToken, refreshToken: newRefreshToken})
         } catch (err) {
@@ -92,7 +99,7 @@ module.exports = {
             const userId = await verifyRefreshToken(refreshToken)
             if (!userId) res.status(400).json({message: 'Refresh tokens dont match between request <-> db'})
 
-            await User.updateOne({userId},{ $unset : { session: {} } })
+            await User.updateOne({userId}, {$unset: {session: {}}})
 
             res.sendStatus(204)
         } catch (err) {

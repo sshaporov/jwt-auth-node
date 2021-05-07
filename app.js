@@ -1,5 +1,6 @@
 const express = require('express')
 const authRoute = require('./routes/auth.route')
+const cors = require('cors')
 const authMiddleware = require('./middleware/auth.middleware')
 require('dotenv').config()
 require('./helpers/init-mongodb')
@@ -11,6 +12,7 @@ require('./config/passport')(passport)
 const PORT = process.env.PORT || 3010
 const app = express()
 
+app.use(cors())
 app.use(express.json())
 app.use(passport.initialize())
 app.use(passport.session())
