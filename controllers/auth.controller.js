@@ -3,8 +3,6 @@ const bcrypt = require('bcrypt')
 const {generateAccessToken, generateRefreshToken, verifyRefreshToken} = require('../helpers/jwt')
 const {createSession} = require('../helpers/user-session')
 const {v4: uuid} = require('uuid')
-const passport = require('passport')
-
 
 module.exports = {
     register: async (req, res) => {
