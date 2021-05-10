@@ -27,7 +27,14 @@ module.exports = {
             const session = createSession(refreshToken)
             await User.findOneAndUpdate({email}, {$set: {session}})
 
-            res.json({accessToken, refreshToken})
+            res.json({
+                accessToken,
+                refreshToken,
+                user: {
+                    userId: user.userId,
+                    email: user.email,
+                }
+            })
         } catch (err) {
             console.log(err)
             res.status(400).json({message: 'auth/registration error'})
