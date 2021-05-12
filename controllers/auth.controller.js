@@ -7,7 +7,7 @@ const {v4: uuid} = require('uuid')
 module.exports = {
     register: async (req, res) => {
         try {
-            const {email, password} = req.body
+            const {firstName, lastName, email, password} = req.body
             if (!email || !password) res.status(400).json({message: 'Email or Password is empty'})
 
             const candidate = await User.findOne({email})
@@ -15,7 +15,7 @@ module.exports = {
 
             const hashPassword = bcrypt.hashSync(password, 10)
 
-            const user = new User({userId: uuid(), email, password: hashPassword})
+            const user = new User({userId: uuid(), firstName, lastName, email, password: hashPassword})
             const savedUser = await user.save()
 
             const accessToken = generateAccessToken(savedUser.userId)
@@ -29,6 +29,8 @@ module.exports = {
                 accessToken,
                 refreshToken,
                 user: {
+                    firstName: user.firstName,
+                    lastName: user.lastName,
                     userId: user.userId,
                     email: user.email,
                 }
@@ -64,6 +66,8 @@ module.exports = {
                 accessToken,
                 refreshToken,
                 user: {
+                    firstName: user.firstName,
+                    lastName: user.lastName,
                     userId: user.userId,
                     email: user.email,
                 }
