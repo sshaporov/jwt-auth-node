@@ -11,14 +11,18 @@ module.exports = function (passport) {
                 clientID: process.env.GOOGLE_CLIENT_ID,
                 clientSecret: process.env.GOOGLE_CLIENT_SECRET,
                 callbackURL: '/auth/google/callback',
+                passReqToCallback: true,
             },
-            async (googleAccessToken, googleRefreshToken, googleProfile, done) => {
+            async (req, googleAccessToken, googleRefreshToken, googleProfile, done) => {
 
                 const email = googleProfile.emails[0].value
+                const firstName = googleProfile.name.givenName
+                const lastName = googleProfile.name.familyName
+
                 const user = await User.findOne({email})
 
                 if (!user) {
-                    const newUser = new User({userId: uuid(), email})
+                    const newUser = new User({userId: uuid(), email, firstName, lastName})
                     const savedUser = await newUser.save()
 
                     const accessToken = generateAccessToken(savedUser.userId)
