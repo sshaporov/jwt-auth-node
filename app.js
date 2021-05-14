@@ -23,7 +23,7 @@ app.get('/', authMiddleware,  async (req, res) => {
     res.send('hello from express')
 })
 app.get('/test', async (req, res) => {
-    res.send('hello redirect from GOOGLE')
+    res.send('hello test route')
 })
 
 app.listen(PORT, () => {

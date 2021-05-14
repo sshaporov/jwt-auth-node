@@ -11,7 +11,9 @@ module.exports = (req, res, next) => {
     try {
         const secret = process.env.ACCESS_SECRET_KEY
         console.log('secret', secret)
-        jwt.verify(token, secret)
+        const decodeUserData = jwt.verify(token, secret)
+        req.user = decodeUserData
+
     } catch (err) {
         if(err instanceof jwt.JsonWebTokenError) {
             res.status(401).json({message: 'Invalid token'})
